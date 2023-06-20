@@ -1,41 +1,53 @@
-import { useCallback, useMemo, useState, ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, ChangeEvent } from 'react';
 import { Configuration, OpenAIApi } from 'openai';
 import correctText from './lib/correct';
 import { cannotGuessText } from './constants/prompt';
+import { useAsync } from 'react-use';
 
 const Popup = () => {
   // OpenAI APIの設定
-  const configuration = useMemo(() => new Configuration({
+  const config = useMemo(() => new Configuration({
     apiKey: 'sk-xxxxx',
   }), []);
+  delete config.baseOptions.headers['User-Agent'];
 
   // OpenAIインスタンス
   const openai = useMemo(() => new OpenAIApi(
-    configuration
-  ), [configuration]);
+    config
+  ), [config]);
 
   const [text, setText] = useState<string>('');
   const [isWrongText, setIsWrongText] = useState<boolean>(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
 
+  // 最初にテキストを復元する
+  useAsync(async () => {
+    if (chrome.storage === undefined) {
+      return;
+    }
+    const result = await chrome.storage.local.get(['text']);
+    setText(result.text);
+  }, []);
+
+  // ポップアップを閉じてもテキストを保持する
+  useEffect(() => {
+    if (chrome.storage === undefined) {
+      return;
+    }
+    chrome.storage.local.set({
+      'text': text
+    });
+  }, [text]);
+
+  const handleInputText = useCallback(() => {
+    if (isWrongText) {
+      setIsWrongText(false);
+    }
+  }, [isWrongText]);
+
   const handleChangeText = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
   }, []);
-
-  // useEffect(() => {
-  //   console.log(chrome);
-  //   chrome.storage.sync.get(['apiKey']).then((result) => {
-  //     setApiKey(result.apiKey);
-  //   });
-  // }, []);
-
-  // const handleSetting = useCallback(() => {
-  //   chrome.storage.sync.set(
-  //     {
-  //       'apiKey': 'secret'
-  //     }
-  //   );
-  // }, []);
 
   // 「端的にする」ボタンを押されたときの処理
   const handleClickCorrection = useCallback(async () => {
@@ -57,6 +69,8 @@ const Popup = () => {
           setText(cannotGuessText);
       }
     }
+
+    setIsCorrecting(false);
   }, [openai, text]);
 
   return (
@@ -76,6 +90,7 @@ const Popup = () => {
       <section className="p-5 flex flex-col items-center">
         <textarea
           value={text}
+          onInput={handleInputText}
           onChange={handleChangeText}
           disabled={isCorrecting}
           className={
