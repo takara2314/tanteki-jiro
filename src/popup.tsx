@@ -53,8 +53,10 @@ const Popup = () => {
 
   // 「端的にする」ボタンを押されたときの処理
   const handleClickCorrection = useCallback(async () => {
+    setIsWrongText(false);
+    setIsCorrecting(true);
+
     try {
-      setIsCorrecting(true);
       const corrected = await correctText(openai, text);
       setText(corrected);
 
@@ -102,15 +104,22 @@ const Popup = () => {
           }
         />
 
-        <button
-          onClick={handleClickCorrection}
-          className="
-            mt-3 px-5 py-2 text-amber-600 font-medium rounded-xl border-4 border-amber-600
-          hover:text-white hover:bg-amber-600 transition-colors
-          "
-        >
-          端的にする
-        </button>
+        {isCorrecting ? (
+          <div
+            aria-label="読み込み中"
+            className="mt-4 animate-spin h-10 w-10 border-4 border-amber-600 rounded-full border-t-transparent"
+          />
+        ) : (
+          <button
+            onClick={handleClickCorrection}
+            className="
+              mt-3 px-5 py-2 text-amber-600 font-medium rounded-xl border-4 border-amber-600
+            hover:text-white hover:bg-amber-600 transition-colors
+            "
+          >
+            端的にする
+          </button>
+        )}
       </section>
     </main>
   );
