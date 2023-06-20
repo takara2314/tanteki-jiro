@@ -39,12 +39,14 @@ const Popup = () => {
     });
   }, [text]);
 
+  // テキストを入力したときの処理
   const handleInputText = useCallback(() => {
     if (isWrongText) {
       setIsWrongText(false);
     }
   }, [isWrongText]);
 
+  // テキストを変更したときの処理
   const handleChangeText = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
   }, []);
