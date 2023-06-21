@@ -27,9 +27,9 @@ const ApiKeySettingModal = ({ setApiKey }: Props) => {
 
       <motion.div
         className="m-auto p-5 w-11/12 h-72 text-center bg-white rounded-xl flex flex-col items-center absolute inset-x-0"
-        initial={{ top: '200vh' }}
+        initial={{ top: '100vh' }}
         animate={{ top: '5rem' }}
-        exit={{ top: '200vh' }}
+        exit={{ top: '100vh' }}
       >
         <h2 className="text-amber-700 text-lg font-bold">
           OpenAI APIキーを入力してください

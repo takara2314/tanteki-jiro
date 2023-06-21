@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useState, ChangeEvent, FormEvent } from 'react';
 import { Configuration, OpenAIApi } from 'openai';
-import correctText from './lib/correct';
-import { cannotGuessText } from './constants/prompt';
 import { AnimatePresence } from 'framer-motion';
-import type { Section } from './models';
-import Settings from './settings';
-import Header from './header';
-import CorrectButtonArea from './correctButtonArea';
-import checkChromeExtension from './lib/environ';
 import useRestore from './hooks/useRestore';
+import correctText from './lib/correct';
+import checkChromeExtension from './lib/environ';
+import { cannotGuessText } from './constants/prompt';
+import Header from './header';
 import ApiKeySettingModal from './apiKeySettingModal';
+import CorrectButtonArea from './correctButtonArea';
+import Settings from './settings';
+import { messageTooLongText, messageWrongApiKey } from './constants/messages';
+import type { Section } from './models';
 
 const Popup = () => {
   const [section, setSection] = useState<Section>('home');
@@ -103,10 +104,10 @@ const Popup = () => {
 
       switch (statusCode) {
         case 400:
-          setText('文章が長すぎます。もう少し短くしてください。');
+          setText(messageTooLongText);
           break;
         case 401:
-          setText('APIキーが誤っています。設定から確認してください。');
+          setText(messageWrongApiKey);
           break;
         case 4444:
           setText(cannotGuessText);
