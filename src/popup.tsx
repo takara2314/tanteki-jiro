@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState, ChangeEvent, FormEvent } fro
 import { Configuration, OpenAIApi } from 'openai';
 import correctText from './lib/correct';
 import { cannotGuessText } from './constants/prompt';
+import { AnimatePresence } from 'framer-motion';
 import { useAsync } from 'react-use';
 import type { Section } from './models';
-import { AnimatePresence } from 'framer-motion';
 import Settings from './settings';
 import Header from './header';
 import CorrectButtonArea from './correctButtonArea';
