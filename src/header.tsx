@@ -20,13 +20,16 @@ const Header = ({ section, setSection }: Props) => {
 
   return (
     <section className="w-full h-12 bg-amber-100 flex flex-row items-center justify-between">
-      <h1 className="
-        w-36 h-full text-2xl text-white bg-amber-700 font-logo tracking-wide
-        flex flex-col items-center justify-center relative
-        after:w-10 after:border-t-[3rem] after:border-amber-700
-        after:border-r-[3rem] after:border-r-transparent
-        after:absolute after:-right-[3rem]
-      ">
+      <h1
+        className="
+          w-36 h-full text-2xl text-white bg-amber-700 font-logo tracking-wide
+          flex flex-col items-center justify-center cursor-pointer relative
+          after:w-10 after:border-t-[3rem] after:border-amber-700
+          after:border-r-[3rem] after:border-r-transparent
+          after:absolute after:-right-[3rem]
+        "
+        onClick={handleClickBack}
+      >
         端的次郎
       </h1>
 

@@ -1,6 +1,7 @@
 import { useCallback, ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
 import { defaultSystemPrompt } from './constants/prompt';
+import { howToGetApiKeyPageUrl } from './constants/tips';
 
 interface Props {
   apiKey: string;
@@ -35,7 +36,7 @@ const Settings = ({ apiKey, systemPrompt, setApiKey, setSystemPrompt }: Props) =
             OpenAI APIキー
           </h2>
           <a
-            href="https://laboratory.kazuuu.net/how-to-get-an-openai-api-key/"
+            href={howToGetApiKeyPageUrl}
             className="text-gray-500 hover:text-amber-700 text-sm transition-colors duration-100"
           >
             APIキーを取得するには？
