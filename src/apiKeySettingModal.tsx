@@ -41,6 +41,7 @@ const ApiKeySettingModal = ({ setApiKey }: Props) => {
 
         <a
           href={howToGetApiKeyPageUrl}
+          target="_blank"
           className="mt-5 text-gray-500 hover:text-amber-700 text-sm transition-colors duration-100"
         >
           APIキーを取得するには？

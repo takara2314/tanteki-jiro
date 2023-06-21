@@ -37,6 +37,7 @@ const Settings = ({ apiKey, systemPrompt, setApiKey, setSystemPrompt }: Props) =
           </h2>
           <a
             href={howToGetApiKeyPageUrl}
+            target="_blank"
             className="text-gray-500 hover:text-amber-700 text-sm transition-colors duration-100"
           >
             APIキーを取得するには？
