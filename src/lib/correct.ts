@@ -1,6 +1,6 @@
 import type { OpenAIApi } from 'openai';
 import type { AxiosError } from 'axios';
-import { cannotGuessText, defaultSystemPrompt } from '../constants/prompt';
+import { cannotGuessText, defaultSystemPrompt, easilyGuessText } from '../constants/prompt';
 
 // 文章を添削する
 const correctText = async (
@@ -39,8 +39,13 @@ const correctText = async (
   const corrected = results.data.choices[0].message?.content ?? '';
 
   // 明らかに文章ではないものが入力された場合
-  if (corrected === cannotGuessText) {
+  if (corrected.includes(cannotGuessText)) {
     throw new Error('4444');
+  }
+
+  // 添削の必要がない場合
+  if (corrected.includes(easilyGuessText)) {
+    return text;
   }
 
   return corrected;

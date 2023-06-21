@@ -6,6 +6,7 @@ interface Props {
   setApiKey: (apiKey: string) => void;
 }
 
+// APIキー設定モーダル
 const ApiKeySettingModal = ({ setApiKey }: Props) => {
   const [apiKeyTemp, setApiKeyTemp] = useState<string>('');
 

@@ -21,10 +21,12 @@ const Popup = () => {
     setApiKey,
     setSystemPrompt,
     setText,
-    setIsNoneText
+    setIsNoneText,
+    loading
   } = useRestore();
 
   const [isWrongText, setIsWrongText] = useState<boolean>(false);
+  const [isPerfectText, setIsPerfectText] = useState<boolean>(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
   const [isShowUndoButton, setIsShowUndoButton] = useState<boolean>(false);
   const [pastText, setPastText] = useState<string>('');
@@ -60,13 +62,19 @@ const Popup = () => {
     if (isWrongText) {
       setIsWrongText(false);
     }
+    if (isPerfectText) {
+      setIsPerfectText(false);
+    }
 
     if (e.currentTarget.value === '') {
       setIsNoneText(true);
     } else {
       setIsNoneText(false);
     }
-  }, [isShowUndoButton, isWrongText, setIsShowUndoButton, setIsWrongText, setIsNoneText]);
+  }, [
+    isShowUndoButton, isWrongText, isPerfectText,
+    setIsShowUndoButton, setIsWrongText, setIsPerfectText, setIsNoneText
+  ]);
 
   // テキストを変更したときの処理
   const handleChangeText = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -76,6 +84,7 @@ const Popup = () => {
   // 「端的にする」ボタンを押されたときの処理
   const handleClickCorrection = useCallback(async () => {
     setIsWrongText(false);
+    setIsPerfectText(false);
     setIsCorrecting(true);
     setPastText(text);
 
@@ -83,20 +92,25 @@ const Popup = () => {
       const corrected = await correctText(openai, text, systemPrompt);
       setText(corrected);
 
+      if (corrected === text) {
+        setIsPerfectText(true);
+      }
+
     } catch (statusCodeStr) {
       // 異常なステータスコードが返ってきたとき
       const statusCode = Number((statusCodeStr as Error).message);
+      setIsWrongText(true);
 
       switch (statusCode) {
         case 400:
-          alert('文章が長すぎます。');
+          setText('文章が長すぎます。もう少し短くしてください。');
           break;
         case 401:
-          alert('APIキーが設定されていません');
+          setText('APIキーが誤っています。設定から確認してください。');
           break;
         case 4444:
-          setIsWrongText(true);
           setText(cannotGuessText);
+          break;
       }
     }
 
@@ -109,7 +123,19 @@ const Popup = () => {
     setText(pastText);
     setIsShowUndoButton(false);
     setIsWrongText(false);
-  }, [pastText, setText, setIsShowUndoButton, setIsWrongText]);
+    setIsPerfectText(false);
+  }, [pastText, setText, setIsShowUndoButton, setIsWrongText, setIsPerfectText]);
+
+  // テキストエリアの背景色
+  const textAreaBgColor = useMemo(() => {
+    if (isWrongText) {
+      return 'bg-red-200';
+    }
+    if (isPerfectText) {
+      return 'bg-green-200';
+    }
+    return 'bg-gray-200';
+  }, [isWrongText, isPerfectText]);
 
   return (
     <>
@@ -126,7 +152,7 @@ const Popup = () => {
             onChange={handleChangeText}
             disabled={isCorrecting}
             className={`
-              p-3 w-full h-full ${isWrongText ? 'bg-red-200' : 'bg-gray-200'} transition-colors duration-300
+              p-3 w-full h-full ${textAreaBgColor} transition-colors duration-300
               rounded-xl outline-none outline-offset-0 focus:outline-amber-600 resize-none
             `}
           />
@@ -152,7 +178,7 @@ const Popup = () => {
       </main>
 
       <AnimatePresence>
-        {apiKey === '' && <ApiKeySettingModal
+        {!loading && apiKey === '' && <ApiKeySettingModal
           setApiKey={setApiKey}
         />}
       </AnimatePresence>

@@ -5,13 +5,13 @@ import { defaultSystemPrompt } from '../constants/prompt';
 
 // Chromeストレージに保存されたデータを復元するフック
 const useRestore = () => {
-  const [apiKey, setApiKey] = useState<string>('sk-xxxxx');
+  const [apiKey, setApiKey] = useState<string>('');
   const [systemPrompt, setSystemPrompt] = useState<string>(defaultSystemPrompt);
   const [text, setText] = useState<string>('');
   const [isNoneText, setIsNoneText] = useState<boolean>(true);
 
   // 最初にAPIキー、システムプロンプト、テキストを復元する
-  useAsync(async () => {
+  const { loading } = useAsync(async () => {
     if (!checkChromeExtension()) {
       return;
     }
@@ -33,7 +33,8 @@ const useRestore = () => {
     setApiKey,
     setSystemPrompt,
     setText,
-    setIsNoneText
+    setIsNoneText,
+    loading
   };
 };
 
