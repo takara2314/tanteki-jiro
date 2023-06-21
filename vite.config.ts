@@ -6,7 +6,7 @@ const manifest = defineManifest({
   manifest_version: 3,
   name: '端的次郎',
   description: '文章を端的に、わかりやすくするわ。（ChatGPT API使用）',
-  version: '1.0.1',
+  version: '1.0.2',
   icons: {
     16: 'public/icon-16.png',
     32: 'public/icon-32.png',
