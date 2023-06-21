@@ -5,10 +5,15 @@ import { cannotGuessText, defaultSystemPrompt } from '../constants/prompt';
 // 文章を添削する
 const correctText = async (
   client: OpenAIApi,
-  text: string
+  text: string,
+  customPrompt = defaultSystemPrompt
 ): Promise<string> => {
 
   let results;
+
+  if (customPrompt === '') {
+    customPrompt = defaultSystemPrompt;
+  }
 
   try {
     // ChatGPT APIに添削をお願いする
@@ -17,7 +22,7 @@ const correctText = async (
       messages: [
         {
           role: 'system',
-          content: defaultSystemPrompt
+          content: customPrompt
         },
         {
           role: 'user',

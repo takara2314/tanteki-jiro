@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, ChangeEvent, FormEvent } from 'react';
 import { Configuration, OpenAIApi } from 'openai';
 import correctText from './lib/correct';
-import { cannotGuessText } from './constants/prompt';
+import { cannotGuessText, defaultSystemPrompt } from './constants/prompt';
 import { AnimatePresence } from 'framer-motion';
 import { useAsync } from 'react-use';
 import type { Section } from './models';
@@ -11,23 +11,25 @@ import CorrectButtonArea from './correctButtonArea';
 import checkChromeExtension from './lib/environ';
 
 const Popup = () => {
+  const [section, setSection] = useState<Section>('home');
+  const [apiKey, setApiKey] = useState<string>('sk-xxxxx');
+  const [systemPrompt, setSystemPrompt] = useState<string>(defaultSystemPrompt);
+
+  const [text, setText] = useState<string>('');
+  const [isWrongText, setIsWrongText] = useState<boolean>(false);
+  const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
+  const [isNoneText, setIsNoneText] = useState<boolean>(true);
+
   // OpenAI APIの設定
   const config = useMemo(() => new Configuration({
-    apiKey: 'sk-xxxxx',
-  }), []);
+    apiKey: apiKey,
+  }), [apiKey]);
   delete config.baseOptions.headers['User-Agent'];
 
   // OpenAIインスタンス
   const openai = useMemo(() => new OpenAIApi(
     config
   ), [config]);
-
-  const [section, setSection] = useState<Section>('home');
-
-  const [text, setText] = useState<string>('');
-  const [isWrongText, setIsWrongText] = useState<boolean>(false);
-  const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
-  const [isNoneText, setIsNoneText] = useState<boolean>(true);
 
   // 最初にテキストを復元する
   useAsync(async () => {
@@ -76,7 +78,7 @@ const Popup = () => {
     setIsCorrecting(true);
 
     try {
-      const corrected = await correctText(openai, text);
+      const corrected = await correctText(openai, text, systemPrompt);
       setText(corrected);
 
     } catch (statusCodeStr) {
@@ -94,16 +96,16 @@ const Popup = () => {
     }
 
     setIsCorrecting(false);
-  }, [openai, text]);
+  }, [openai, text, systemPrompt]);
 
   return (
-    <AnimatePresence>
+    <>
       <Header
         section={section}
         setSection={setSection}
       />
 
-      <main className="p-5 w-full h-[calc(100vh-3rem)] flex flex-col items-center">
+      <main className="px-5 pt-5 w-full h-[calc(100vh-3rem)] flex flex-col items-center">
         <textarea
           value={text}
           onInput={handleInputText}
@@ -122,8 +124,15 @@ const Popup = () => {
         />
       </main>
 
-      {section === 'settings' && <Settings />}
-    </AnimatePresence>
+      <AnimatePresence>
+        {section === 'settings' && <Settings
+          apiKey={apiKey}
+          systemPrompt={systemPrompt}
+          setApiKey={setApiKey}
+          setSystemPrompt={setSystemPrompt}
+        />}
+      </AnimatePresence>
+    </>
   );
 };
 
