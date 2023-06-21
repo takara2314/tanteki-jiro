@@ -1,24 +1,30 @@
 import { useCallback, useEffect, useMemo, useState, ChangeEvent, FormEvent } from 'react';
 import { Configuration, OpenAIApi } from 'openai';
 import correctText from './lib/correct';
-import { cannotGuessText, defaultSystemPrompt } from './constants/prompt';
+import { cannotGuessText } from './constants/prompt';
 import { AnimatePresence } from 'framer-motion';
-import { useAsync } from 'react-use';
 import type { Section } from './models';
 import Settings from './settings';
 import Header from './header';
 import CorrectButtonArea from './correctButtonArea';
 import checkChromeExtension from './lib/environ';
+import useRestore from './hooks/useRestore';
 
 const Popup = () => {
   const [section, setSection] = useState<Section>('home');
-  const [apiKey, setApiKey] = useState<string>('sk-xxxxx');
-  const [systemPrompt, setSystemPrompt] = useState<string>(defaultSystemPrompt);
+  const {
+    apiKey,
+    systemPrompt,
+    text,
+    isNoneText,
+    setApiKey,
+    setSystemPrompt,
+    setText,
+    setIsNoneText
+  } = useRestore();
 
-  const [text, setText] = useState<string>('');
   const [isWrongText, setIsWrongText] = useState<boolean>(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
-  const [isNoneText, setIsNoneText] = useState<boolean>(true);
 
   // OpenAI APIの設定
   const config = useMemo(() => new Configuration({
@@ -31,28 +37,17 @@ const Popup = () => {
     config
   ), [config]);
 
-  // 最初にテキストを復元する
-  useAsync(async () => {
-    if (!checkChromeExtension()) {
-      return;
-    }
-    const result = await chrome.storage.local.get(['text']);
-    setText(result.text);
-
-    if (result.text !== '') {
-      setIsNoneText(false);
-    }
-  }, []);
-
-  // ポップアップを閉じてもテキストを保持する
+  // ポップアップを閉じてもAPIキー、システムプロンプト、テキストを保持する
   useEffect(() => {
     if (!checkChromeExtension()) {
       return;
     }
     chrome.storage.local.set({
+      'apiKey': apiKey,
+      'systemPrompt': systemPrompt,
       'text': text
     });
-  }, [text]);
+  }, [apiKey, systemPrompt, text]);
 
   // テキストを入力したときの処理
   const handleInputText = useCallback((e: FormEvent<HTMLTextAreaElement>) => {
@@ -65,12 +60,12 @@ const Popup = () => {
     } else {
       setIsNoneText(false);
     }
-  }, [isWrongText]);
+  }, [isWrongText, setIsWrongText, setIsNoneText]);
 
   // テキストを変更したときの処理
   const handleChangeText = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
-  }, []);
+  }, [setText]);
 
   // 「端的にする」ボタンを押されたときの処理
   const handleClickCorrection = useCallback(async () => {
@@ -96,7 +91,7 @@ const Popup = () => {
     }
 
     setIsCorrecting(false);
-  }, [openai, text, systemPrompt]);
+  }, [openai, text, systemPrompt, setText, setIsWrongText, setIsCorrecting]);
 
   return (
     <>
