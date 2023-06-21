@@ -28,6 +28,10 @@ const Popup = () => {
     }
     const result = await chrome.storage.local.get(['text']);
     setText(result.text);
+
+    if (result.text !== '') {
+      setIsNoneText(false);
+    }
   }, []);
 
   // ポップアップを閉じてもテキストを保持する
