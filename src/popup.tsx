@@ -9,6 +9,7 @@ import Header from './header';
 import CorrectButtonArea from './correctButtonArea';
 import checkChromeExtension from './lib/environ';
 import useRestore from './hooks/useRestore';
+import ApiKeySettingModal from './apiKeySettingModal';
 
 const Popup = () => {
   const [section, setSection] = useState<Section>('home');
@@ -25,7 +26,7 @@ const Popup = () => {
 
   const [isWrongText, setIsWrongText] = useState<boolean>(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
-  const [isShowRedoButton, setIsShowRedoButton] = useState<boolean>(false);
+  const [isShowUndoButton, setIsShowUndoButton] = useState<boolean>(false);
   const [pastText, setPastText] = useState<string>('');
 
   // OpenAI APIの設定
@@ -53,8 +54,8 @@ const Popup = () => {
 
   // テキストを入力したときの処理
   const handleInputText = useCallback((e: FormEvent<HTMLTextAreaElement>) => {
-    if (isShowRedoButton) {
-      setIsShowRedoButton(false);
+    if (isShowUndoButton) {
+      setIsShowUndoButton(false);
     }
     if (isWrongText) {
       setIsWrongText(false);
@@ -65,7 +66,7 @@ const Popup = () => {
     } else {
       setIsNoneText(false);
     }
-  }, [isShowRedoButton, isWrongText, setIsShowRedoButton, setIsWrongText, setIsNoneText]);
+  }, [isShowUndoButton, isWrongText, setIsShowUndoButton, setIsWrongText, setIsNoneText]);
 
   // テキストを変更したときの処理
   const handleChangeText = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -100,15 +101,15 @@ const Popup = () => {
     }
 
     setIsCorrecting(false);
-    setIsShowRedoButton(true);
-  }, [openai, text, systemPrompt, setText, setIsWrongText, setIsCorrecting, setIsShowRedoButton]);
+    setIsShowUndoButton(true);
+  }, [openai, text, systemPrompt, setText, setIsWrongText, setIsCorrecting, setIsShowUndoButton]);
 
   // 「元に戻す」ボタンを押されたときの処理
-  const handleClickRedo = useCallback(() => {
+  const handleClickUndo = useCallback(() => {
     setText(pastText);
-    setIsShowRedoButton(false);
+    setIsShowUndoButton(false);
     setIsWrongText(false);
-  }, [pastText, setText, setIsShowRedoButton, setIsWrongText]);
+  }, [pastText, setText, setIsShowUndoButton, setIsWrongText]);
 
   return (
     <>
@@ -130,9 +131,9 @@ const Popup = () => {
             `}
           />
 
-          {isShowRedoButton && (
+          {isShowUndoButton && (
             <button
-              onClick={handleClickRedo}
+              onClick={handleClickUndo}
               className="
                 m-auto w-32 py-1 tracking-wide text-amber-700 font-bold bg-white rounded-xl shadow-lg
                 flex flex-col items-center absolute bottom-3 inset-x-0 hover:bg-amber-100 transition-colors duration-300
@@ -149,6 +150,12 @@ const Popup = () => {
           isNoneText={isNoneText}
         />
       </main>
+
+      <AnimatePresence>
+        {apiKey === '' && <ApiKeySettingModal
+          setApiKey={setApiKey}
+        />}
+      </AnimatePresence>
 
       <AnimatePresence>
         {section === 'settings' && <Settings

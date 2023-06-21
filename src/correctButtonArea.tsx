@@ -5,7 +5,11 @@ interface Props {
 }
 
 // 「端的にする」ボタン付近の要素
-const CorrectButtonArea = ({isCorrecting, onClick, isNoneText}: Props) => {
+const CorrectButtonArea = ({
+  isCorrecting,
+  onClick,
+  isNoneText
+}: Props) => {
   if (isCorrecting) {
     return (
       <>
