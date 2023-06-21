@@ -8,6 +8,7 @@ import type { Section } from './models';
 import Settings from './settings';
 import Header from './header';
 import CorrectButtonArea from './correctButtonArea';
+import checkChromeExtension from './lib/environ';
 
 const Popup = () => {
   // OpenAI APIの設定
@@ -30,7 +31,7 @@ const Popup = () => {
 
   // 最初にテキストを復元する
   useAsync(async () => {
-    if (chrome.storage === undefined) {
+    if (!checkChromeExtension()) {
       return;
     }
     const result = await chrome.storage.local.get(['text']);
@@ -43,7 +44,7 @@ const Popup = () => {
 
   // ポップアップを閉じてもテキストを保持する
   useEffect(() => {
-    if (chrome.storage === undefined) {
+    if (!checkChromeExtension()) {
       return;
     }
     chrome.storage.local.set({
