@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, ChangeEvent, FormEvent } from 'react';
 import { Configuration, OpenAIApi } from 'openai';
 import correctText from './lib/correct';
 import { cannotGuessText } from './constants/prompt';
@@ -19,6 +19,7 @@ const Popup = () => {
   const [text, setText] = useState<string>('');
   const [isWrongText, setIsWrongText] = useState<boolean>(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
+  const [isNoneText, setIsNoneText] = useState<boolean>(true);
 
   // 最初にテキストを復元する
   useAsync(async () => {
@@ -40,9 +41,15 @@ const Popup = () => {
   }, [text]);
 
   // テキストを入力したときの処理
-  const handleInputText = useCallback(() => {
+  const handleInputText = useCallback((e: FormEvent<HTMLTextAreaElement>) => {
     if (isWrongText) {
       setIsWrongText(false);
+    }
+
+    if (e.currentTarget.value === '') {
+      setIsNoneText(true);
+    } else {
+      setIsNoneText(false);
     }
   }, [isWrongText]);
 
@@ -97,25 +104,34 @@ const Popup = () => {
           onInput={handleInputText}
           onChange={handleChangeText}
           disabled={isCorrecting}
-          className={
-            isWrongText
-            ? 'p-3 w-full h-[65vh] bg-red-200 transition-colors duration-300 rounded-xl'
-            : 'p-3 w-full h-[65vh] bg-gray-200 transition-colors duration-300 rounded-xl'
-          }
+          className={`
+            p-3 w-full h-[65vh] ${isWrongText ? 'bg-red-200' : 'bg-gray-200'} transition-colors duration-300
+            rounded-xl outline-none outline-offset-0 focus:outline-amber-600 resize-none
+          `}
         />
 
         {isCorrecting ? (
-          <div
-            aria-label="読み込み中"
-            className="mt-4 animate-spin h-10 w-10 border-4 border-amber-600 rounded-full border-t-transparent"
-          />
+          <>
+            <div
+              aria-label="読み込み中"
+              className="mt-2 mb-1 animate-spin h-8 w-8 border-4 border-amber-600 rounded-full border-t-transparent"
+            />
+            <span className="text-sm text-gray-500">
+              ポップアップを閉じないでください
+            </span>
+          </>
         ) : (
           <button
             onClick={handleClickCorrection}
-            className="
+            type="submit"
+            disabled={isNoneText}
+            className={isNoneText ? `
+              mt-3 px-5 py-2 text-gray-400 font-medium rounded-xl border-4 border-gray-400
+              transition-colors duration-200
+            ` : `
               mt-3 px-5 py-2 text-amber-600 font-medium rounded-xl border-4 border-amber-600
-            hover:text-white hover:bg-amber-600 transition-colors
-            "
+            hover:text-white hover:bg-amber-600 transition-colors duration-200
+            `}
           >
             端的にする
           </button>
