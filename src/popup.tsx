@@ -25,6 +25,8 @@ const Popup = () => {
 
   const [isWrongText, setIsWrongText] = useState<boolean>(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
+  const [isShowRedoButton, setIsShowRedoButton] = useState<boolean>(false);
+  const [pastText, setPastText] = useState<string>('');
 
   // OpenAI APIの設定
   const config = useMemo(() => new Configuration({
@@ -51,6 +53,9 @@ const Popup = () => {
 
   // テキストを入力したときの処理
   const handleInputText = useCallback((e: FormEvent<HTMLTextAreaElement>) => {
+    if (isShowRedoButton) {
+      setIsShowRedoButton(false);
+    }
     if (isWrongText) {
       setIsWrongText(false);
     }
@@ -60,7 +65,7 @@ const Popup = () => {
     } else {
       setIsNoneText(false);
     }
-  }, [isWrongText, setIsWrongText, setIsNoneText]);
+  }, [isShowRedoButton, isWrongText, setIsShowRedoButton, setIsWrongText, setIsNoneText]);
 
   // テキストを変更したときの処理
   const handleChangeText = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -71,6 +76,7 @@ const Popup = () => {
   const handleClickCorrection = useCallback(async () => {
     setIsWrongText(false);
     setIsCorrecting(true);
+    setPastText(text);
 
     try {
       const corrected = await correctText(openai, text, systemPrompt);
@@ -81,6 +87,9 @@ const Popup = () => {
       const statusCode = Number((statusCodeStr as Error).message);
 
       switch (statusCode) {
+        case 400:
+          alert('文章が長すぎます。');
+          break;
         case 401:
           alert('APIキーが設定されていません');
           break;
@@ -91,7 +100,15 @@ const Popup = () => {
     }
 
     setIsCorrecting(false);
-  }, [openai, text, systemPrompt, setText, setIsWrongText, setIsCorrecting]);
+    setIsShowRedoButton(true);
+  }, [openai, text, systemPrompt, setText, setIsWrongText, setIsCorrecting, setIsShowRedoButton]);
+
+  // 「元に戻す」ボタンを押されたときの処理
+  const handleClickRedo = useCallback(() => {
+    setText(pastText);
+    setIsShowRedoButton(false);
+    setIsWrongText(false);
+  }, [pastText, setText, setIsShowRedoButton, setIsWrongText]);
 
   return (
     <>
@@ -101,16 +118,30 @@ const Popup = () => {
       />
 
       <main className="px-5 pt-5 w-full h-[calc(100vh-3rem)] flex flex-col items-center">
-        <textarea
-          value={text}
-          onInput={handleInputText}
-          onChange={handleChangeText}
-          disabled={isCorrecting}
-          className={`
-            p-3 w-full h-[65vh] ${isWrongText ? 'bg-red-200' : 'bg-gray-200'} transition-colors duration-300
-            rounded-xl outline-none outline-offset-0 focus:outline-amber-600 resize-none
-          `}
-        />
+        <div className="w-full h-[65vh] relative">
+          <textarea
+            value={text}
+            onInput={handleInputText}
+            onChange={handleChangeText}
+            disabled={isCorrecting}
+            className={`
+              p-3 w-full h-full ${isWrongText ? 'bg-red-200' : 'bg-gray-200'} transition-colors duration-300
+              rounded-xl outline-none outline-offset-0 focus:outline-amber-600 resize-none
+            `}
+          />
+
+          {isShowRedoButton && (
+            <button
+              onClick={handleClickRedo}
+              className="
+                m-auto w-32 py-1 tracking-wide text-amber-700 font-bold bg-white rounded-xl shadow-lg
+                flex flex-col items-center absolute bottom-3 inset-x-0 hover:bg-amber-100 transition-colors duration-300
+              "
+            >
+              元に戻す
+            </button>
+          )}
+        </div>
 
         <CorrectButtonArea
           isCorrecting={isCorrecting}
