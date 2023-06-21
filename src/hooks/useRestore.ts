@@ -16,9 +16,9 @@ const useRestore = () => {
       return;
     }
     const result = await chrome.storage.local.get(['apiKey', 'systemPrompt', 'text']);
-    setApiKey(result.apiKey);
-    setSystemPrompt(result.systemPrompt);
-    setText(result.text);
+    setApiKey(result.apiKey ?? '');
+    setSystemPrompt(result.systemPrompt ?? '');
+    setText(result.text ?? '');
 
     if (result.text !== '') {
       setIsNoneText(false);
