@@ -19,7 +19,7 @@ const Header = ({ section, setSection }: Props) => {
   }, [setSection]);
 
   return (
-    <section className="w-full h-12 bg-amber-100 flex flex-row items-center justify-between">
+    <header className="w-full h-12 bg-amber-100 flex flex-row items-center justify-between">
       <h1
         className="
           w-36 h-full text-2xl text-white bg-amber-700 font-logo tracking-wide
@@ -48,7 +48,7 @@ const Header = ({ section, setSection }: Props) => {
           ← ホームに戻る
         </button>
       )}
-    </section>
+    </header>
   );
 };
 
